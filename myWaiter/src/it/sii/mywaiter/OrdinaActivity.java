@@ -20,7 +20,7 @@ public class OrdinaActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				Intent intent = new Intent(OrdinaActivity.this,
-						MenuActivity.class);
+						QrActivity.class);
 				startActivity(intent);
 			}
 		});
