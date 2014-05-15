@@ -16,11 +16,10 @@
 
     <Button
         android:id="@+id/qr_button"
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/qr_textview"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="120dp"
+        android:layout_centerVertical="true"
         android:text="@string/qr_textbutton" />
 
 </RelativeLayout>

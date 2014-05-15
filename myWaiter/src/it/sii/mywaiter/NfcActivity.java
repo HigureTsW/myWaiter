@@ -2,9 +2,13 @@ package it.sii.mywaiter;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.FragmentManager;
 import android.app.PendingIntent;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
@@ -36,42 +40,64 @@ public class NfcActivity extends Activity {
 		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 		
 		if (mNfcAdapter == null) {
-            // Stop here, we definitely need NFC
+            // controlla che l'nfc sia presente (forse ridondante)
             Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show();
             finish();
             return;
- 
         }
      
         if (!mNfcAdapter.isEnabled()) {
+        	//controlla che l'nfc sia attivo
             mTextView.setText(R.string.nfc_disabled);
+            NfcsDialogFragment dialog = new NfcsDialogFragment();
+            FragmentManager fm = getFragmentManager();
+            dialog.show(fm, "frag_name");
         } else {
             mTextView.setText(R.string.nfc_active);
         }
-         
         handleIntent(getIntent());
-        
     }
+	
+	public class NfcsDialogFragment extends DialogFragment {
+		//crea il dialogfragment
+	    @Override
+	    public Dialog onCreateDialog(Bundle savedInstanceState) {
+	        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+	        builder.setMessage(R.string.nfc_dialog_absent)
+	        	   .setTitle(R.string.nfc_dialog_title)
+	               .setPositiveButton(R.string.nfc_dialog_enable, new DialogInterface.OnClickListener() {
+	                   public void onClick(DialogInterface dialog, int id) {
+	                	   startActivity(new Intent(android.provider.Settings.ACTION_NFC_SETTINGS));
+	                   }
+	               })
+	               .setNegativeButton(R.string.nfc_dialog_noenable, new DialogInterface.OnClickListener() {
+	                   public void onClick(DialogInterface dialog, int id) {
+	                	   Intent intent = new Intent(NfcActivity.this,
+	       						OrdinaActivity.class);
+	       					startActivity(intent);
+	                   }
+	               });
+	        return builder.create();
+	    }
+	}
 	
 	@Override
     protected void onPause() {
-        /**
-         * Call this before onPause, otherwise an IllegalArgumentException is thrown as well.
-         */
-        stopForegroundDispatch(this, mNfcAdapter);
-         
+		NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+		nfcAdapter.disableForegroundDispatch(this);
         super.onPause();
     }
+	
+	@Override
+	protected void onResume(){
+		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+		NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+		nfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null);
+		super.onResume();
+	}
      
     @Override
     protected void onNewIntent(Intent intent) { 
-        /**
-         * This method gets called, when a new Intent gets associated with the current activity instance.
-         * Instead of creating a new activity, onNewIntent will be called. For more information have a look
-         * at the documentation.
-         * 
-         * In our case this method gets called, when the user attaches a Tag to the device.
-         */
         handleIntent(intent);
     }
      
@@ -85,29 +111,13 @@ public class NfcActivity extends Activity {
                 Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
                 new NdefReaderTask().execute(tag);
                  
-            } else {
+            } 
+            else {
                 Log.d(TAG, "Wrong mime type: " + type);
-            }
-        } else if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
-             
-            // In case we would still use the Tech Discovered Intent
-            Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-            String[] techList = tag.getTechList();
-            String searchedTech = Ndef.class.getName();
-             
-            for (String tech : techList) {
-                if (searchedTech.equals(tech)) {
-                    new NdefReaderTask().execute(tag);
-                    break;
-                }
             }
         }
     }
      
-    /**
-     * @param activity The corresponding {@link Activity} requesting the foreground dispatch.
-     * @param adapter The {@link NfcAdapter} used for the foreground dispatch.
-     */
     public static void setupForegroundDispatch(final Activity activity, NfcAdapter adapter) {
         final Intent intent = new Intent(activity.getApplicationContext(), activity.getClass());
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -130,20 +140,10 @@ public class NfcActivity extends Activity {
         adapter.enableForegroundDispatch(activity, pendingIntent, filters, techList);
     }
  
-    /**
-     * @param activity The corresponding {@link BaseActivity} requesting to stop the foreground dispatch.
-     * @param adapter The {@link NfcAdapter} used for the foreground dispatch.
-     */
     public static void stopForegroundDispatch(final Activity activity, NfcAdapter adapter) {
         adapter.disableForegroundDispatch(activity);
     }
     
-    /**
-     * Background task for reading the data. Do not block the UI thread while reading. 
-     * 
-     * @author Ralf Wondratschek
-     *
-     */
     private class NdefReaderTask extends AsyncTask<Tag, Void, String> {
      
         @Override
@@ -173,16 +173,6 @@ public class NfcActivity extends Activity {
         }
          
         private String readText(NdefRecord record) throws UnsupportedEncodingException {
-            /*
-             * See NFC forum specification for "Text Record Type Definition" at 3.2.1 
-             * 
-             * http://www.nfc-forum.org/specs/
-             * 
-             * bit_7 defines encoding
-             * bit_6 reserved for future use, must be 0
-             * bit_5..0 length of IANA language code
-             */
-     
             byte[] payload = record.getPayload();
      
             // Get the Text Encoding
@@ -202,10 +192,8 @@ public class NfcActivity extends Activity {
         protected void onPostExecute(String result) {
             if (result != null) {
                 mTextView.setText("Read content: " + result);
+                //finish();
             }
         }
     }
 }
-
-
-

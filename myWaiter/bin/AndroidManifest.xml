@@ -52,11 +52,15 @@
         
 		<activity
     		android:name="it.sii.mywaiter.NfcActivity">
-            <intent-filter>
+            <intent-filter>  
+            	<action android:name="android.intent.action.MAIN" />  
+             	<category android:name="android.intent.category.DEFAULT" />  
+            </intent-filter> 
+            <!-- <intent-filter>
     			<action android:name="android.nfc.action.NDEF_DISCOVERED" />
     			<category android:name="android.intent.category.DEFAULT" />
     			<data android:mimeType="text/plain" />
-			</intent-filter>
+			</intent-filter>-->
  
     		<meta-data
         		android:name="android.nfc.action.TECH_DISCOVERED"
@@ -73,8 +77,8 @@
         <activity
             android:name="com.google.zxing.client.android.CaptureActivity"
             android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="portrait"  
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateAlwaysHidden" >
     		
     		<intent-filter>  
