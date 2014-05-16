@@ -18,5 +18,11 @@
     <string name="nfc_dialog_enable">Abilita</string>
     <string name="nfc_dialog_noenable">Non abilitare</string>
     
+    <string name="app_name">LocationTest</string>
+    <string name="hello_world">Hello world!</string>
+    
+    <string name="locationtext_label">LatLong unknown</string>
+    <string name="locationbutton_label">getPosition()</string>
+    
 
 </resources>

@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-          android:id="@+id/mymapfragment"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:name="com.google.android.gms.maps.MapFragment"/>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	android:orientation="vertical" android:id="@+id/mainLayout">
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/mymapview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" 
+        
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+  
+        
+        map:cameraTargetLat="0"
+	    map:cameraTargetLng="0"
+		map:mapType="normal"
+		map:uiCompass="false"
+		map:uiRotateGestures="false"
+		map:uiScrollGestures="true"
+		map:uiTiltGestures="true"
+		map:uiZoomControls="true"
+		map:uiZoomGestures="true"
+        >
+    </com.google.android.gms.maps.MapView>
+</LinearLayout>
