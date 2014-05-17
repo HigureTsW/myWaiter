@@ -1,5 +1,21 @@
 package it.sii.mywaiter;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import it.sii.mywaiter.R;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -20,7 +36,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -56,6 +76,14 @@ GoogleMap mMap;
 LocationClient mLocationClient;
 Location mCurrentLocation;
 MarkerOptions mo;
+String nome;
+
+
+////////////////////////////LETTURA DATABASE
+
+//////////////////////////////////////////////////////////////////////////
+
+
 
 
 @Override
@@ -85,21 +113,92 @@ protected void onCreate(Bundle savedInstanceState) {
 	     
 	     }
 	}
+	
+	Thread t = new Thread(new Runnable() {
+		public void run() {
+
+		ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+		/*
+		nameValuePairs.add(new BasicNameValuePair("name","Juventus"));*/
+		InputStream is;
+
+
+
+		try
+		{
+		HttpClient httpclient = new DefaultHttpClient();
+		HttpPost httppost = new HttpPost("http://fabiopettiti.altervista.org/ristoranti.php");
+		httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+		HttpResponse response = httpclient.execute(httppost);
+		HttpEntity entity = response.getEntity();
+
+		is = entity.getContent();
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(is,"iso-8859-1"),8);
+		StringBuilder sb = new StringBuilder();
+		String line = null;
+		while ((line = reader.readLine()) != null) 
+		{
+		sb.append(line + "\n");
+		}
+		is.close();
+
+		String result=sb.toString();
+
+
+		JSONArray jArray = new JSONArray(result);
+		MarkerOptions[] markerArray = new MarkerOptions[3];
+		double j = 0;
+		for(int i=0;i<jArray.length();i++){
+			JSONObject json_data = jArray.getJSONObject(i);
+			j = j + 0.1;
+			//Piatto messaggio = new Piatto(json_data.getString("nome"), json_data.getDouble("prezzo"),json_data.getString("descrizione"), json_data.getString("ingrediente"), json_data.getDouble("rating"));
+			double lat = 45 + j;  //da modificare, provvisorio! TODO
+			nome = json_data.getString("nome");
+			MarkerOptions mo = new MarkerOptions()
+				.position(new LatLng(lat, 7.7000))
+				.title(nome+" "+ lat + " " + jArray.length())
+				.icon(BitmapDescriptorFactory.fromResource(R.drawable.waiter_mini));
+			
+			markerArray[i]=mo;
+		}
 		
+			Message msg = new Message();
+			   
+			msg.obj = markerArray;
+			mHandler.sendMessage(msg);
+		
+		}
+		catch(Exception e){
+		Log.e("log_tag", "Error "+e.toString());
+		}
+		}
+		});
+		t.start();	
+	
+	
 		/*LatLng latla = new LatLng(45.0667, 7.7000);
 		mo.position(latla);
 		mo.title("Torino messaggio");
-		Marker marker = mMap.addMarker(mo);*/
+		Marker marker = mMap.addMarker(mo);
 		MarkerOptions mo = new MarkerOptions()
 	 	.position(new LatLng(45.0667, 7.7000))
-	 	.title("Amici miei")
+	 	.title(nome)
 	 	.icon(BitmapDescriptorFactory.fromResource(R.drawable.waiter_mini));
-		/*.icon(BitmapDescriptorFactory.fromResource(R.drawable.logo_polito));*/
+		.icon(BitmapDescriptorFactory.fromResource(R.drawable.logo_polito));*/
 	
+		//Piatto messaggio = new Piatto(json_data.getString("nome"), json_data.getDouble("prezzo"),json_data.getString("descrizione"), json_data.getString("ingrediente"), json_data.getDouble("rating"));
+	       
+	       
+		
+		
+		
+		
+		
 	 
 	 
-	 
-	mMap.addMarker(mo);
+	//mMap.addMarker(mo);
 	/*
      * Create a new location client, using the enclosing class to
      * handle callbacks.
@@ -116,6 +215,19 @@ protected void onCreate(Bundle savedInstanceState) {
     // Set the fastest update interval to 1 second
     mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
 }
+
+Handler mHandler = new Handler() {
+    @Override
+    public void handleMessage(Message msg) {
+    	MarkerOptions[] mex= (MarkerOptions[]) msg.obj;    	
+    	for (int i = 0; i< mex.length; i++){
+    		mMap.addMarker(mex[i]);
+    	}
+    	
+        
+    }
+};
+
 
 /*
  * Called by Location Services when the request to connect the
