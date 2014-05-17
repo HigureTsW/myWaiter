@@ -12,6 +12,7 @@
         
         map:cameraTargetLat="0"
 	    map:cameraTargetLng="0"
+	    map:cameraZoom="12"
 		map:mapType="normal"
 		map:uiCompass="false"
 		map:uiRotateGestures="false"

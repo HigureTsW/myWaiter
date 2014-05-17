@@ -1,6 +1,7 @@
 package it.sii.mywaiter;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -8,13 +9,14 @@ import java.util.ArrayList;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.json.*;
 
 import it.sii.mywaiter.R;
 
@@ -114,6 +116,9 @@ protected void onCreate(Bundle savedInstanceState) {
 	     }
 	}
 	
+	
+	
+	
 	Thread t = new Thread(new Runnable() {
 		public void run() {
 
@@ -154,10 +159,17 @@ protected void onCreate(Bundle savedInstanceState) {
 			JSONObject json_data = jArray.getJSONObject(i);
 			j = j + 0.1;
 			//Piatto messaggio = new Piatto(json_data.getString("nome"), json_data.getDouble("prezzo"),json_data.getString("descrizione"), json_data.getString("ingrediente"), json_data.getDouble("rating"));
-			double lat = 45 + j;  //da modificare, provvisorio! TODO
-			nome = json_data.getString("nome");
+			//double lat = 45 + j;  //da modificare, provvisorio! TODO
+			
+			String addressToSearch = json_data.getString("indirizzo");
+			addressToSearch = addressToSearch.replace(" ", "%20");
+			JSONObject addressInfo = getAddressInfo(addressToSearch);
+			
+			double lng = ((JSONArray)addressInfo.get("results")).getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lng");
+	        double lat = ((JSONArray)addressInfo.get("results")).getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lat");                     
+			
 			MarkerOptions mo = new MarkerOptions()
-				.position(new LatLng(lat, 7.7000))
+				.position(new LatLng(lat, lng))
 				.title(nome+" "+ lat + " " + jArray.length())
 				.icon(BitmapDescriptorFactory.fromResource(R.drawable.waiter_mini));
 			
@@ -177,7 +189,9 @@ protected void onCreate(Bundle savedInstanceState) {
 		});
 		t.start();	
 	
-	
+		
+		
+		
 		/*LatLng latla = new LatLng(45.0667, 7.7000);
 		mo.position(latla);
 		mo.title("Torino messaggio");
@@ -346,6 +360,35 @@ public void onLocationChanged(Location arg0) {
 	// TODO Auto-generated method stub
 	
 }    	
+
+
+public static JSONObject getAddressInfo(String sAddress) {
+    HttpGet httpGet = new HttpGet("http://maps.google.com/maps/api/geocode/json?address=" + sAddress + "&sensor=false");
+    HttpClient client = new DefaultHttpClient();
+    HttpResponse response;
+    StringBuilder stringBuilder = new StringBuilder();
+
+    try {
+        response = client.execute(httpGet);
+        HttpEntity entity = response.getEntity();
+        InputStream stream = entity.getContent();
+        int b;
+        while ((b = stream.read()) != -1) {
+            stringBuilder.append((char) b);
+        }
+    } catch (ClientProtocolException e) {
+    } catch (IOException e) {
+    }
+
+    JSONObject jsonObject = new JSONObject();
+    try {
+        jsonObject = new JSONObject(stringBuilder.toString());
+        Log.d("Google Geocoding Response", stringBuilder.toString());
+    } catch (JSONException e) {
+        e.printStackTrace();
+    }
+    return jsonObject;
+}	
 
 	
 
