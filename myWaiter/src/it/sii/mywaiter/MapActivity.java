@@ -78,7 +78,6 @@ GoogleMap mMap;
 LocationClient mLocationClient;
 Location mCurrentLocation;
 MarkerOptions mo;
-String nome;
 
 
 ////////////////////////////LETTURA DATABASE
@@ -161,7 +160,9 @@ protected void onCreate(Bundle savedInstanceState) {
 			//Piatto messaggio = new Piatto(json_data.getString("nome"), json_data.getDouble("prezzo"),json_data.getString("descrizione"), json_data.getString("ingrediente"), json_data.getDouble("rating"));
 			//double lat = 45 + j;  //da modificare, provvisorio! TODO
 			
+			String nome = json_data.getString("nome");
 			String addressToSearch = json_data.getString("indirizzo");
+			
 			addressToSearch = addressToSearch.replace(" ", "%20");
 			JSONObject addressInfo = getAddressInfo(addressToSearch);
 			
@@ -170,8 +171,8 @@ protected void onCreate(Bundle savedInstanceState) {
 			
 			MarkerOptions mo = new MarkerOptions()
 				.position(new LatLng(lat, lng))
-				.title(nome+" "+ lat + " " + jArray.length())
-				.icon(BitmapDescriptorFactory.fromResource(R.drawable.waiter_mini));
+				.title(nome)
+				.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_ico));
 			
 			markerArray[i]=mo;
 		}

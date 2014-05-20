@@ -75,10 +75,11 @@ int drawable ic_plusone_small_off_client 0x7f02001a
 int drawable ic_plusone_standard_off_client 0x7f02001b
 int drawable ic_plusone_tall_off_client 0x7f02001c
 int drawable launcher_icon 0x7f02001d
-int drawable share_via_barcode 0x7f02001e
-int drawable shopper_icon 0x7f02001f
-int drawable waiter_ico 0x7f020020
-int drawable waiter_mini 0x7f020021
+int drawable marker_ico 0x7f02001e
+int drawable share_via_barcode 0x7f02001f
+int drawable shopper_icon 0x7f020020
+int drawable waiter_ico 0x7f020021
+int drawable waiter_mini 0x7f020022
 int id RelativeLayout1 0x7f09002a
 int id app_picker_list_item_icon 0x7f09000f
 int id app_picker_list_item_label 0x7f090010
